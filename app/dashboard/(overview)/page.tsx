@@ -10,10 +10,7 @@ import { RevenueChartSkeleton,
          CardsSkeleton
        } from '@/app/ui/skeletons';
 import { Metadata} from 'next';
-
-export const metadata: Metadata = {
-  title: 'Dashboard',
-};
+import { auth } from '@/auth'; 
 
 export default async function Page() {
     const {
@@ -23,11 +20,15 @@ export default async function Page() {
         totalPendingInvoices,
       } = await fetchCardData();
 
+    const session = await auth();
+    console.log('SESSION:',session);
+
   return (
     <main>
       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
         Dashboard
       </h1>
+      <div>こんにちは、{session?.user?.role ?? 'ゲスト'} さん</div>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Suspense fallback={<CardsSkeleton/>}>
           <CardWrapper/>

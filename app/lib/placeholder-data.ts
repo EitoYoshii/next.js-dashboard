@@ -2,11 +2,19 @@
 // https://nextjs.org/learn/dashboard-app/fetching-data
 const users = [
   {
-    id: '410544b2-4001-4271-9855-fec4b6a6442a',
-    name: 'User',
-    email: 'user@nextmail.com',
+    id: '8f8c0a9b-0e78-4f02-90c5-1cbbde287d27',
+    name: 'Taro Yamada',
+    email: 'Users@nextmail.com',
     password: '123456',
+    role: 'user',
   },
+  {
+    id: 'f4a1c1d6-4b7e-44f6-8171-0c9dbb441f6f',
+    name: 'Hanako Sato',
+    email: 'Admins@nextmail.com',
+    password: '0246810',
+    role: 'admin',
+  }, 
 ];
 
 const customers = [
