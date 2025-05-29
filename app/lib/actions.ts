@@ -28,15 +28,31 @@ const UserSchema = z.object({
   name: z.string(),
   id: z.string(),
   email: z.string(),
-  password: z.coerce.number(),
+  password: z.string(),
   role: z.string(),
 });
+
+const UpdateShema = z.object({
+  name: z.string().min(1, { message: '名前は必須です' }),
+  email: z.string().email({ message: '有効なメールアドレスを入力してください' }),
+  role: z.string().min(1, { message: '役職は必須です' }),
+});
+
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true});
 const UpdateInvoice = FormSchema.omit({id: true, date: true});
 const CreateUser = UserSchema.omit({});
-const UpdateUser = UserSchema.omit({});
+const UpdateUser = UpdateShema.omit({});
 
+
+export type updateUserState = {
+  errors?: {
+    name?: string[];
+    email?: string[];
+    role?: string[];
+  };
+  message?: string | null;
+};
 
 
 export type State = {
@@ -97,11 +113,13 @@ export async function createUser(prevState: userState, formData: FormData) {
   
   const validatedFields = CreateUser.safeParse({
     name: formData.get('name'),
-    id: formData.get('ID'),
+    id: formData.get('id'),
     email: formData.get('email'),
-    password: formData.get('password'),
+    password: formData.get('password') as string,
     role: formData.get('role'),
   });
+
+  console.log('validateFields',validatedFields);
 
   if (!validatedFields.success){
     return{
@@ -111,14 +129,19 @@ export async function createUser(prevState: userState, formData: FormData) {
   }
   
   const { name, id, email, password, role } = validatedFields.data;
-  // const hashedPassword = await bcrypt.hash(password, 10);
-  
+  console.log('form values', {name, id, email, password, role});
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  console.log('hashedPassword', hashedPassword);  
+
   try{
   await sql`
     INSERT INTO users (id, name, email, password, role)
-    VALUES (${id}, ${name}, ${email}, ${password}, ${role})
+    VALUES (${id}, ${name}, ${email}, ${hashedPassword}, ${role})
+    ON CONFLICT (id) DO NOTHING;
   `;
   } catch(error){
+    console.error('DB Error', error);
     return {
       message: 'Database Error: Failed to Create User.',
     };
@@ -161,6 +184,42 @@ export async function updateInvoice(
 
     revalidatePath('/dashboard/invoices');
     redirect('/dashboard/invoices')
+}
+
+export async function updateUser(
+  id: string,
+  prevState: userState,
+  formData: FormData,
+ ) {
+    console.log('updateUser called');
+    const validatedFields = UpdateUser.safeParse({
+        name: formData.get('name'),
+        email: formData.get('email'),
+        role: formData.get('role'),
+    });
+  console.log('updateUser called with ID:', id);
+  if (!validatedFields.success) {
+    console.log('zod validation errors:',validatedFields.error.flatten().fieldErrors);
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update User.',
+    };
+  }    
+
+    const { name, email, role } = validatedFields.data;
+
+    try{
+        await sql`
+        UPDATE users
+        SET name=${name}, email=${email}, role=${role}
+        WHERE id = ${id}
+        `;
+    } catch(error){
+        return { message: 'Database Error: Failed to Update User.'};
+    }
+
+    revalidatePath('/dashboard/USERS');
+    redirect('/dashboard/USERS')
 }
 
 export async function deleteInvoice(id: string) {

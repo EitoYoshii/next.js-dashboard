@@ -17,7 +17,7 @@ export function CreateUsers() {
 export function UpdateUsers({ id }: { id: string }) {
   return (
     <Link
-      href={`/dashboard/invoices/${id}/edit`}
+      href={`/dashboard/USERS/${id}/edit`}
       className="rounded-md border p-2 hover:bg-gray-100"
     >
       <PencilIcon className="w-5" />
@@ -26,7 +26,7 @@ export function UpdateUsers({ id }: { id: string }) {
 }
 
 export function DeleteUsers({ id }: { id: string }) {
-  const deleteUserWithId = deleteUsers.bind(null, id);
+  const deleteUserWithId = deleteUsers.bind(null,id);
 
   return (
     <form action={deleteUserWithId}>

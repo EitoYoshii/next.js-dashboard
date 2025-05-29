@@ -43,7 +43,7 @@ export default async function InvoicesTable() {
                     {user.id}         
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    {user.email}
+                    {user.role === 'admin' ? '' : user.email}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {user.role}

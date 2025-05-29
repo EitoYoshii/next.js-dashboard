@@ -186,6 +186,25 @@ export async function fetchCustomers() {
   }
 }
 
+export async function fetchUsersById(id: string) {
+  try {
+    const userdata = await sql<UsersForm[]>`
+      SELECT
+        name,
+        id,
+        email,
+        role
+      FROM users
+      WHERE users.id = ${id};
+    `;
+
+    return userdata[0];
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch users with ID.');
+  }
+}
+
 export async function fetchUsers() {
   try {
     const users = await sql<UsersForm[]>`
