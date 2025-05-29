@@ -6,6 +6,7 @@ import postgres from 'postgres';
 import { redirect } from 'next/navigation';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
+import  bcrypt from 'bcryptjs';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require'});
 
@@ -23,8 +24,19 @@ const FormSchema = z.object({
     date: z.string(),
 });
 
+const UserSchema = z.object({
+  name: z.string(),
+  id: z.string(),
+  email: z.string(),
+  password: z.coerce.number(),
+  role: z.string(),
+});
+
 const CreateInvoice = FormSchema.omit({ id: true, date: true});
 const UpdateInvoice = FormSchema.omit({id: true, date: true});
+const CreateUser = UserSchema.omit({});
+const UpdateUser = UserSchema.omit({});
+
 
 
 export type State = {
@@ -35,6 +47,17 @@ export type State = {
   };
   message?: string | null;
 };
+
+export type userState = {
+  errors?: {
+    name?: string[];
+    id?: string[];
+    email?: string[];
+    password?: string[];
+    role?: string[];
+  }
+  message?: string | null;
+}
 
 export async function createInvoice(prevState: State, formData: FormData) {
   
@@ -68,6 +91,41 @@ export async function createInvoice(prevState: State, formData: FormData) {
 
     revalidatePath('/dashboard/invoices');
     redirect('/dashboard/invoices');
+}
+
+export async function createUser(prevState: userState, formData: FormData) {
+  
+  const validatedFields = CreateUser.safeParse({
+    name: formData.get('name'),
+    id: formData.get('ID'),
+    email: formData.get('email'),
+    password: formData.get('password'),
+    role: formData.get('role'),
+  });
+
+  if (!validatedFields.success){
+    return{
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create User.',
+    };
+  }
+  
+  const { name, id, email, password, role } = validatedFields.data;
+  // const hashedPassword = await bcrypt.hash(password, 10);
+  
+  try{
+  await sql`
+    INSERT INTO users (id, name, email, password, role)
+    VALUES (${id}, ${name}, ${email}, ${password}, ${role})
+  `;
+  } catch(error){
+    return {
+      message: 'Database Error: Failed to Create User.',
+    };
+  }
+
+    revalidatePath('/dashboard/USERS');
+    redirect('/dashboard/USERS');
 }
 
 export async function updateInvoice(
@@ -127,4 +185,9 @@ export async function authenticate(
     }
     throw error;
   }
+}
+
+export async function deleteUsers(id: string) {
+  await sql`DELETE FROM users WHERE id = ${id}`;
+  revalidatePath('/dashboard/USERS');
 }

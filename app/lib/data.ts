@@ -1,5 +1,6 @@
 import postgres from 'postgres';
 import {
+  UsersForm,
   CustomerField,
   CustomersTableType,
   InvoiceForm,
@@ -182,6 +183,25 @@ export async function fetchCustomers() {
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch all customers.');
+  }
+}
+
+export async function fetchUsers() {
+  try {
+    const users = await sql<UsersForm[]>`
+      SELECT
+        name,
+        id,
+        email,
+        role
+      FROM users
+      ORDER BY name ASC
+    `;
+
+    return users;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch all users.');
   }
 }
 
