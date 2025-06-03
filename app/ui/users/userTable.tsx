@@ -50,8 +50,8 @@ export default async function InvoicesTable() {
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">
-                      <UpdateUsers id={user.id} />
-                      <DeleteUsers id={user.id} />
+                      {user.role === 'admin' ? '' : <UpdateUsers id={user.id} />}
+                      {user.role === 'admin' ? '' :<DeleteUsers id={user.id} />}
                     </div>
                   </td>
                 </tr>
